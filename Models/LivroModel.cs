@@ -1,9 +1,9 @@
 namespace BibliotecaApi.Models
 {
-    public class Livro
+    public class LivroModel
     {
         public int Id { get; set; }
         public string? Titulo { get; set; }
-        public Autor? Autor { get; set; }
+        public AutorModel? Autor { get; set; }
     }
 }
