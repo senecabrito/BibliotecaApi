@@ -111,5 +111,66 @@ namespace BibliotecaApi.Services.Autor
                 return resposta;
             }
         }
+
+        public async Task<ResponseModel<List<AutorModel>>> EditarAutor(AutorEdicaoDto autorEdicaoDto)
+        {
+            ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
+            try
+            {
+                var autor = _context.Autores
+                .FirstOrDefault(bancoAutor => bancoAutor.Id == autorEdicaoDto.Id);
+
+                if (autor == null)
+                {
+                    resposta.Mensagem = "Nenhum autor foi encontrado para ser editado.";
+                    return resposta;
+                }
+
+                autor.Nome = autorEdicaoDto.Nome;
+                autor.Sobrenome = autorEdicaoDto.Sobrenome;
+
+                _context.Update(autor);
+                await _context.SaveChangesAsync();
+
+                resposta.Dados = await _context.Autores.ToListAsync();
+                resposta.Mensagem = "Dados do autor alterado com sucesso.";
+                return resposta;
+            }
+            catch (Exception e)
+            {
+                resposta.Mensagem = e.Message;
+                resposta.Status = false;
+                return resposta;
+            }
+        }
+
+        public async Task<ResponseModel<List<AutorModel>>> ExcluirAutor(int idAutor)
+        {
+            ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
+            try
+            {
+                var autor = await _context.Autores
+                .FirstOrDefaultAsync(bancoAutores => bancoAutores.Id == idAutor);
+
+                if (autor == null)
+                {
+                    resposta.Mensagem = "Nenhum autor foi encontrado.";
+                    return resposta;
+                }
+
+                _context.Remove(autor);
+                await _context.SaveChangesAsync();
+
+                resposta.Dados = await _context.Autores.ToListAsync();
+                resposta.Mensagem = "Autor excluído com sucesso.";
+                return resposta;
+            }
+            catch (Exception e)
+            {
+                resposta.Mensagem = e.Message;
+                resposta.Status = false;
+                return resposta;
+            }
+        }
     }
 }
