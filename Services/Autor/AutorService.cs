@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using BibliotecaApi.Data;
 using BibliotecaApi.Models;
-using BibliotecaApi.Services.Autor;
+using BibliotecaApi.Dto.Autor;
 
 namespace BibliotecaApi.Services.Autor
 {
@@ -58,7 +58,7 @@ namespace BibliotecaApi.Services.Autor
                 return resposta;
             }
         }
-        
+
         public async Task<ResponseModel<AutorModel>> BuscarAutorPorIdLivro(int idLivro)
         {
             ResponseModel<AutorModel> resposta = new ResponseModel<AutorModel>();
@@ -76,6 +76,32 @@ namespace BibliotecaApi.Services.Autor
 
                 resposta.Mensagem = "Autor encontrado.";
                 resposta.Dados = livro.Autor;
+                return resposta;
+            }
+            catch (Exception e)
+            {
+                resposta.Mensagem = e.Message;
+                resposta.Status = false;
+                return resposta;
+            }
+        }
+
+        public async Task<ResponseModel<List<AutorModel>>> CriarAutor(AutorCriacaoDto autorCriacaoDto)
+        {
+            ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
+            try
+            {
+                var autor = new AutorModel()
+                {
+                    Nome = autorCriacaoDto.Nome,
+                    Sobrenome = autorCriacaoDto.Sobrenome
+                };
+
+                _context.Add(autor);
+                await _context.SaveChangesAsync();
+
+                resposta.Dados = await _context.Autores.ToListAsync();
+                resposta.Mensagem = "Autor criado com sucesso.";
                 return resposta;
             }
             catch (Exception e)

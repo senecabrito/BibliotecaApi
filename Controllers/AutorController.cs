@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BibliotecaApi.Services.Autor;
 using BibliotecaApi.Models;
+using BibliotecaApi.Dto.Autor;
 
 namespace BibliotecaApi.Controllers
 {
@@ -34,6 +35,13 @@ namespace BibliotecaApi.Controllers
         {
             var autor = await _autorInterface.BuscarAutorPorIdLivro(idLivro);
             return Ok(autor);
+        }
+
+        [HttpPost("CriarAutor")]
+        public async Task<ActionResult<ResponseModel<List<AutorModel>>>> CriarAutor(AutorCriacaoDto autorCriacaoDto)
+        {
+            var autores = await _autorInterface.CriarAutor(autorCriacaoDto);
+            return Ok(autores);
         }
     }
 }
