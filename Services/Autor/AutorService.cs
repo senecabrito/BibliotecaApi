@@ -117,8 +117,8 @@ namespace BibliotecaApi.Services.Autor
             ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
             try
             {
-                var autor = _context.Autores
-                .FirstOrDefault(bancoAutor => bancoAutor.Id == autorEdicaoDto.Id);
+                var autor = await _context.Autores
+                .FirstOrDefaultAsync(bancoAutor => bancoAutor.Id == autorEdicaoDto.Id);
 
                 if (autor == null)
                 {
