@@ -51,7 +51,7 @@ namespace BibliotecaApi.Controllers
             return Ok(autores);
         }
 
-        [HttpDelete("ExcluirAutor{idAutor}")]
+        [HttpDelete("ExcluirAutor/{idAutor}")]
         public async Task<ActionResult<ResponseModel<List<AutorModel>>>> ExcluirAutor(int idAutor)
         {
             var autores = await _autorInterface.ExcluirAutor(idAutor);
