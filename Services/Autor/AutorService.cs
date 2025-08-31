@@ -70,7 +70,7 @@ namespace BibliotecaApi.Services.Autor
                 var autor = await _autorRepository.BuscarAutorPorIdLivro(idLivro);
                 if (autor == null)
                 {
-                    resposta.Mensagem = "Nenhum autor encontrado para o livro.";
+                    resposta.Mensagem = "Nenhum autor encontrado.";
                     return resposta;
                 }
 
