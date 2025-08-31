@@ -15,12 +15,13 @@ namespace BibliotecaApi.Repositories.Livro
 
         public async Task<List<LivroModel>> ListarLivros()
         {
-            return await _context.Livros.ToListAsync();
+            return await _context.Livros.Include(a => a.Autor).ToListAsync();
         }
 
         public async Task<LivroModel?> BuscarLivroPorId(int idLivro)
         {
             return await _context.Livros
+                .Include(a => a.Autor)
                 .FirstOrDefaultAsync(livroBanco => livroBanco.Id == idLivro);
         }
 
