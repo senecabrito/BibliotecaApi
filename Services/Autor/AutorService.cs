@@ -1,17 +1,16 @@
-using Microsoft.EntityFrameworkCore;
-using BibliotecaApi.Data;
 using BibliotecaApi.Models;
-using BibliotecaApi.Dto.Autor;
+using BibliotecaApi.Models.Dto.Autor;
+using BibliotecaApi.Repositories.Autor;
 
 namespace BibliotecaApi.Services.Autor
 {
-    public class AutorService : IAutor
+    public class AutorService : IAutorService
     {
-        private readonly AppDbContext _context;
+        private readonly IAutorRepository _autorRepository;
 
-        public AutorService(AppDbContext context)
+        public AutorService(IAutorRepository autorRepository)
         {
-            _context = context;
+            _autorRepository = autorRepository;
         }
 
         public async Task<ResponseModel<List<AutorModel>>> ListarAutores()
@@ -19,18 +18,25 @@ namespace BibliotecaApi.Services.Autor
             ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
             try
             {
-                var autores = await _context.Autores.ToListAsync();
-                resposta.Dados = autores;
-                resposta.Mensagem = "Todos os autores foram coletados.";
+                var autores = await _autorRepository.ListarAutores() ?? new List<AutorModel>();
 
-                return resposta;
+                if (!autores.Any())
+                {
+                    resposta.Mensagem = "Nenhum autor foi encontrado.";
+                }
+                else
+                {
+                    resposta.Mensagem = "Todos os autores foram coletados.";
+                }
+
+                resposta.Dados = autores;
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<AutorModel>> BuscarAutorPorId(int idAutor)
@@ -38,25 +44,22 @@ namespace BibliotecaApi.Services.Autor
             ResponseModel<AutorModel> resposta = new ResponseModel<AutorModel>();
             try
             {
-                var autor = await _context.Autores.FirstOrDefaultAsync(autorBanco => autorBanco.Id == idAutor);
-
+                var autor = await _autorRepository.BuscarAutorPorId(idAutor);
                 if (autor == null)
                 {
-                    resposta.Mensagem = "Nenhum autor encontrado.";
+                    resposta.Mensagem = "Nenhum autor foi encontrado.";
                     return resposta;
                 }
 
                 resposta.Dados = autor;
                 resposta.Mensagem = "Autor localizado.";
-
-                return resposta;
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<AutorModel>> BuscarAutorPorIdLivro(int idLivro)
@@ -64,26 +67,22 @@ namespace BibliotecaApi.Services.Autor
             ResponseModel<AutorModel> resposta = new ResponseModel<AutorModel>();
             try
             {
-                var livro = await _context.Livros
-                    .Include(a => a.Autor)
-                    .FirstOrDefaultAsync(livroBanco => livroBanco.Id == idLivro);
-
-                if (livro == null)
+                var autor = await _autorRepository.BuscarAutorPorIdLivro(idLivro);
+                if (autor == null)
                 {
-                    resposta.Mensagem = "Nenhum retorno localizado.";
+                    resposta.Mensagem = "Nenhum autor encontrado para o livro.";
                     return resposta;
                 }
 
-                resposta.Mensagem = "Autor encontrado.";
-                resposta.Dados = livro.Autor;
-                return resposta;
+                resposta.Dados = autor;
+                resposta.Mensagem = "Autor localizado.";
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<List<AutorModel>>> CriarAutor(AutorCriacaoDto autorCriacaoDto)
@@ -91,25 +90,23 @@ namespace BibliotecaApi.Services.Autor
             ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
             try
             {
-                var autor = new AutorModel()
+                var autor = new AutorModel
                 {
                     Nome = autorCriacaoDto.Nome,
                     Sobrenome = autorCriacaoDto.Sobrenome
                 };
 
-                _context.Add(autor);
-                await _context.SaveChangesAsync();
+                await _autorRepository.CriarAutor(autor);
 
-                resposta.Dados = await _context.Autores.ToListAsync();
+                resposta.Dados = await _autorRepository.ListarAutores();
                 resposta.Mensagem = "Autor criado com sucesso.";
-                return resposta;
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<List<AutorModel>>> EditarAutor(AutorEdicaoDto autorEdicaoDto)
@@ -117,9 +114,7 @@ namespace BibliotecaApi.Services.Autor
             ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
             try
             {
-                var autor = await _context.Autores
-                .FirstOrDefaultAsync(bancoAutor => bancoAutor.Id == autorEdicaoDto.Id);
-
+                var autor = await _autorRepository.BuscarAutorPorId(autorEdicaoDto.Id);
                 if (autor == null)
                 {
                     resposta.Mensagem = "Nenhum autor foi encontrado para ser editado.";
@@ -129,19 +124,17 @@ namespace BibliotecaApi.Services.Autor
                 autor.Nome = autorEdicaoDto.Nome;
                 autor.Sobrenome = autorEdicaoDto.Sobrenome;
 
-                _context.Update(autor);
-                await _context.SaveChangesAsync();
+                await _autorRepository.EditarAutor(autor);
 
-                resposta.Dados = await _context.Autores.ToListAsync();
-                resposta.Mensagem = "Dados do autor alterado com sucesso.";
-                return resposta;
+                resposta.Dados = await _autorRepository.ListarAutores();
+                resposta.Mensagem = "Dados do autor alterados com sucesso.";
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<List<AutorModel>>> ExcluirAutor(int idAutor)
@@ -149,28 +142,22 @@ namespace BibliotecaApi.Services.Autor
             ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
             try
             {
-                var autor = await _context.Autores
-                .FirstOrDefaultAsync(bancoAutores => bancoAutores.Id == idAutor);
-
-                if (autor == null)
+                var sucesso = await _autorRepository.ExcluirAutor(idAutor);
+                if (!sucesso)
                 {
-                    resposta.Mensagem = "Nenhum autor foi encontrado.";
+                    resposta.Mensagem = "Nenhum autor foi encontrado para exclusão.";
                     return resposta;
                 }
 
-                _context.Remove(autor);
-                await _context.SaveChangesAsync();
-
-                resposta.Dados = await _context.Autores.ToListAsync();
+                resposta.Dados = await _autorRepository.ListarAutores();
                 resposta.Mensagem = "Autor excluído com sucesso.";
-                return resposta;
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
     }
 }
