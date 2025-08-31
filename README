@@ -1,0 +1,62 @@
+# 📚 Biblioteca API
+
+Uma API REST desenvolvida em **.NET 8** para gerenciamento de autores e livros.  
+Permite criar, listar, editar e excluir registros de autores e livros, mantendo o relacionamento entre eles.
+
+---
+
+## 🚀 Tecnologias Utilizadas
+
+- [.NET 8](https://dotnet.microsoft.com/)
+- ASP.NET Core Web API
+- Entity Framework Core
+- C#
+
+---
+
+## 📂 Estrutura do Projeto
+
+BibliotecaApi/
+│── Controllers/
+│ ├── AutorController.cs
+│ ├── LivroController.cs
+│
+│── Models/
+│ ├── AutorModel.cs
+│ ├── LivroModel.cs
+│ ├── ResponseModel.cs
+│ └── Dto/
+│ ├── Autor/
+│ │ ├── AutorCriacaoDto.cs
+│ │ ├── AutorEdicaoDto.cs
+│ ├── Livro/
+│ ├── LivroCriacaoDto.cs
+│ ├── LivroEdicaoDto.cs
+│
+│── Repositories/
+│ ├── Autor/
+│ │ ├── IAutorRepository.cs
+│ │ ├── AutorRepository.cs
+│ ├── Livro/
+│ ├── ILivroRepository.cs
+│ ├── LivroRepository.cs
+│
+│── Services/
+│ ├── Autor/
+│ │ ├── IAutorService.cs
+│ │ ├── AutorService.cs
+│ ├── Livro/
+│ ├── ILivroService.cs
+│ ├── LivroService.cs
+
+✅ Próximos Passos
+
+Implementar autenticação/autorização (JWT ou Identity).
+
+Adicionar testes unitários.
+
+Criar documentação automática com Swagger/OpenAPI.
+
+Implementar validações mais robustas para DTOs.
+
+Avaliar paginação e filtros para listagens.
