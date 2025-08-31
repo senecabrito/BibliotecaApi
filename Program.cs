@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using BibliotecaApi.Data;
 using BibliotecaApi.Services.Autor;
 using BibliotecaApi.Services.Livro;
+using BibliotecaApi.Repositories.Autor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +14,9 @@ builder.Services.AddSwaggerGen();
 // registra controllers
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<IAutor, AutorService>();
-builder.Services.AddScoped<ILivro, LivroService>();
+builder.Services.AddScoped<IAutorService, AutorService>();
+builder.Services.AddScoped<IAutorRepository, AutorRepository>();
+builder.Services.AddScoped<ILivroService, LivroService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
