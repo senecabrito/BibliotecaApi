@@ -20,15 +20,15 @@ namespace BibliotecaApi.Controllers
         [HttpGet("ListarLivros")]
         public async Task<ActionResult<ResponseModel<List<LivroModel>>>> ListarLivros()
         {
-            var autores = await _livroInterface.ListarLivros();
-            return Ok(autores);
+            var livros = await _livroInterface.ListarLivros();
+            return Ok(livros);
         }
 
         [HttpGet("BuscarLivroPorId/{idLivro}")]
         public async Task<ActionResult<ResponseModel<LivroModel>>> BuscarLivroPorId(int idLivro)
         {
-            var autor = await _livroInterface.BuscarLivroPorId(idLivro);
-            return Ok(autor);
+            var livro = await _livroInterface.BuscarLivroPorId(idLivro);
+            return Ok(livro);
         }
 
         [HttpGet("BuscarLivrosPorIdAutor/{idAutor}")]
