@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using BibliotecaApi.Data;
 using BibliotecaApi.Models;
-using BibliotecaApi.Dto.Livro;
+using BibliotecaApi.Models.Dto.Livro;
 
 namespace BibliotecaApi.Services.Livro
 {
-    public class LivroService : ILivro
+    public class LivroService : ILivroService
     {
         private readonly AppDbContext _context;
 
