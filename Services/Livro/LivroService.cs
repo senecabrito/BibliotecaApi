@@ -1,17 +1,19 @@
-using Microsoft.EntityFrameworkCore;
-using BibliotecaApi.Data;
 using BibliotecaApi.Models;
 using BibliotecaApi.Models.Dto.Livro;
+using BibliotecaApi.Repositories.Livro;
+using BibliotecaApi.Repositories.Autor;
 
 namespace BibliotecaApi.Services.Livro
 {
     public class LivroService : ILivroService
     {
-        private readonly AppDbContext _context;
+        private readonly ILivroRepository _livroRepository;
+        private readonly IAutorRepository _autorRepository;
 
-        public LivroService(AppDbContext context)
+        public LivroService(ILivroRepository livroRepository, IAutorRepository autorRepository)
         {
-            _context = context;
+            _livroRepository = livroRepository;
+            _autorRepository = autorRepository;
         }
 
         public async Task<ResponseModel<List<LivroModel>>> ListarLivros()
@@ -19,26 +21,25 @@ namespace BibliotecaApi.Services.Livro
             ResponseModel<List<LivroModel>> resposta = new ResponseModel<List<LivroModel>>();
             try
             {
-                var livros = await _context.Livros
-                .Include(a => a.Autor)
-                .ToListAsync();
+                var livros = await _livroRepository.ListarLivros() ?? new List<LivroModel>();
 
                 if (!livros.Any())
                 {
                     resposta.Mensagem = "Nenhum livro foi encontrado.";
-                    return resposta;
+                }
+                else
+                {
+                    resposta.Mensagem = "Todos os livros foram coletados.";
                 }
 
                 resposta.Dados = livros;
-                resposta.Mensagem = "Todos os livros foram coletados.";
-                return resposta;
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<LivroModel>> BuscarLivroPorId(int idLivro)
@@ -46,26 +47,22 @@ namespace BibliotecaApi.Services.Livro
             ResponseModel<LivroModel> resposta = new ResponseModel<LivroModel>();
             try
             {
-                var livro = await _context.Livros
-                .Include(a => a.Autor)
-                .FirstOrDefaultAsync(livroBanco => livroBanco.Id == idLivro);
-
+                var livro = await _livroRepository.BuscarLivroPorId(idLivro);
                 if (livro == null)
                 {
-                    resposta.Mensagem = "Nenhum livro foi encontrado";
+                    resposta.Mensagem = "Nenhum livro foi encontrado.";
                     return resposta;
                 }
 
                 resposta.Dados = livro;
-                resposta.Mensagem = "O livro foi coletado.";
-                return resposta;
+                resposta.Mensagem = "Livro localizado.";
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<List<LivroModel>>> BuscarLivrosPorIdAutor(int idAutor)
@@ -73,27 +70,25 @@ namespace BibliotecaApi.Services.Livro
             ResponseModel<List<LivroModel>> resposta = new ResponseModel<List<LivroModel>>();
             try
             {
-                var livros = await _context.Livros
-                .Include(a => a.Autor)
-                .Where(livroBanco => livroBanco.Autor != null && livroBanco.Autor.Id == idAutor)
-                .ToListAsync();
-
+                var livros = await _livroRepository.BuscarLivrosPorIdAutor(idAutor) ?? new List<LivroModel>();
+                
                 if (!livros.Any())
                 {
-                    resposta.Mensagem = "Nenhum livro deste autor foi encontrado.";
-                    return resposta;
+                    resposta.Mensagem = "Nenhum livro foi encontrado.";
+                }
+                else
+                {
+                    resposta.Mensagem = "Todos os livros foram coletados.";
                 }
 
                 resposta.Dados = livros;
-                resposta.Mensagem = "Os livros deste autor foram coletados.";
-                return resposta;
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<List<LivroModel>>> CriarLivro(LivroCriacaoDto livroCriacaoDto)
@@ -107,9 +102,8 @@ namespace BibliotecaApi.Services.Livro
                     return resposta;
                 }
 
-                var autor = await _context.Autores
-                .FirstOrDefaultAsync(autorBanco => autorBanco.Id == livroCriacaoDto.Autor.Id);
-
+                // Buscar autor pelo ID
+                var autor = await _autorRepository.BuscarAutorPorId(livroCriacaoDto.Autor.Id);
                 if (autor == null)
                 {
                     resposta.Mensagem = "Nenhum registro de autor localizado.";
@@ -122,22 +116,17 @@ namespace BibliotecaApi.Services.Livro
                     Autor = autor
                 };
 
-                await _context.AddAsync(livro);
-                await _context.SaveChangesAsync();
+                await _livroRepository.CriarLivro(livro);
 
-                resposta.Dados = await _context.Livros
-                .Include(a => a.Autor)
-                .ToListAsync();
-
-                resposta.Mensagem = "O livro foi adicionado com sucesso.";
-                return resposta;
+                resposta.Dados = await _livroRepository.ListarLivros();
+                resposta.Mensagem = "Livro criado com sucesso.";
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<List<LivroModel>>> EditarLivro(LivroEdicaoDto livroEdicaoDto)
@@ -145,41 +134,37 @@ namespace BibliotecaApi.Services.Livro
             ResponseModel<List<LivroModel>> resposta = new ResponseModel<List<LivroModel>>();
             try
             {
-                var livro = await _context.Livros
-                .Include(a => a.Autor)
-                .FirstOrDefaultAsync(livroBanco => livroBanco.Id == livroEdicaoDto.Id);
-
+                var livro = await _livroRepository.BuscarLivroPorId(livroEdicaoDto.Id);
                 if (livro == null)
                 {
-                    resposta.Mensagem = "O livro não foi encontrado.";
+                    resposta.Mensagem = "Nenhum livro foi encontrado para ser editado.";
                     return resposta;
                 }
 
-                var autor = await _context.Autores
-                .FirstOrDefaultAsync(autorBanco => autorBanco.Id == livroEdicaoDto.Autor.Id);
-
-                if (autor == null)
+                if (livroEdicaoDto.Autor != null)
                 {
-                    resposta.Mensagem = "O autor não foi encontrado.";
-                    return resposta; 
+                    var autor = await _autorRepository.BuscarAutorPorId(livroEdicaoDto.Autor.Id);
+                    if (autor == null)
+                    {
+                        resposta.Mensagem = "Autor informado não existe.";
+                        return resposta;
+                    }
+                    livro.Autor = autor;
                 }
 
                 livro.Titulo = livroEdicaoDto.Titulo;
-                livro.Autor = autor;
 
-                _context.Update(livro);
-                await _context.SaveChangesAsync();
+                await _livroRepository.EditarLivro(livro);
 
-                resposta.Mensagem = "O livro foi alterado com sucesso.";
-                resposta.Dados = await _context.Livros.ToListAsync();
-                return resposta;
+                resposta.Dados = await _livroRepository.ListarLivros();
+                resposta.Mensagem = "Dados do livro alterados com sucesso.";
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
 
         public async Task<ResponseModel<List<LivroModel>>> ExcluirLivro(int idLivro)
@@ -187,28 +172,22 @@ namespace BibliotecaApi.Services.Livro
             ResponseModel<List<LivroModel>> resposta = new ResponseModel<List<LivroModel>>();
             try
             {
-                var livro = _context.Livros
-                .FirstOrDefault(livroBanco => livroBanco.Id == idLivro);
-
-                if (livro == null)
+                var sucesso = await _livroRepository.ExcluirLivro(idLivro);
+                if (!sucesso)
                 {
-                    resposta.Mensagem = "O livro não foi encontrado.";
+                    resposta.Mensagem = "Nenhum livro foi encontrado para exclusão.";
                     return resposta;
                 }
 
-                _context.Remove(livro);
-                await _context.SaveChangesAsync();
-
-                resposta.Mensagem = "O livro foi removido com sucesso.";
-                resposta.Dados = await _context.Livros.ToListAsync();
-                return resposta;
+                resposta.Dados = await _livroRepository.ListarLivros();
+                resposta.Mensagem = "Livro excluído com sucesso.";
             }
             catch (Exception e)
             {
-                resposta.Mensagem = e.Message;
                 resposta.Status = false;
-                return resposta;
+                resposta.Mensagem = e.Message;
             }
+            return resposta;
         }
     }
 }
