@@ -7,6 +7,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/Dotnet.gitignore
 
+# Ignora arquivos sensíveis do projeto
+BibliotecaApi.csproj
+BibliotecaApi.http
+BibliotecaApi.sln
+appsettings.Development.json
+appsettings.json
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
