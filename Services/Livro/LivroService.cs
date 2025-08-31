@@ -146,6 +146,7 @@ namespace BibliotecaApi.Services.Livro
             try
             {
                 var livro = await _context.Livros
+                .Include(a => a.Autor)
                 .FirstOrDefaultAsync(livroBanco => livroBanco.Id == livroEdicaoDto.Id);
 
                 if (livro == null)
@@ -154,8 +155,17 @@ namespace BibliotecaApi.Services.Livro
                     return resposta;
                 }
 
+                var autor = await _context.Autores
+                .FirstOrDefaultAsync(autorBanco => autorBanco.Id == livroEdicaoDto.Autor.Id);
+
+                if (autor == null)
+                {
+                    resposta.Mensagem = "O autor não foi encontrado.";
+                    return resposta; 
+                }
+
                 livro.Titulo = livroEdicaoDto.Titulo;
-                livro.Autor = livroEdicaoDto.Autor;
+                livro.Autor = autor;
 
                 _context.Update(livro);
                 await _context.SaveChangesAsync();
