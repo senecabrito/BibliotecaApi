@@ -3,6 +3,7 @@ using BibliotecaApi.Data;
 using BibliotecaApi.Services.Autor;
 using BibliotecaApi.Services.Livro;
 using BibliotecaApi.Repositories.Autor;
+using BibliotecaApi.Repositories.Livro;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +15,10 @@ builder.Services.AddSwaggerGen();
 // registra controllers
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<IAutorService, AutorService>();
 builder.Services.AddScoped<IAutorRepository, AutorRepository>();
+builder.Services.AddScoped<ILivroRepository, LivroRepository>();
+
+builder.Services.AddScoped<IAutorService, AutorService>();
 builder.Services.AddScoped<ILivroService, LivroService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
