@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BibliotecaApi.Services.Livro;
 using BibliotecaApi.Models;
-using BibliotecaApi.Dto.Livro;
+using BibliotecaApi.Models.Dto.Livro;
 
 namespace BibliotecaApi.Controllers
 {
@@ -10,9 +10,9 @@ namespace BibliotecaApi.Controllers
 
     public class LivroController : ControllerBase
     {
-        private readonly ILivro _livroInterface;
+        private readonly ILivroService _livroInterface;
 
-        public LivroController(ILivro livroInterface)
+        public LivroController(ILivroService livroInterface)
         {
             _livroInterface = livroInterface;
         }

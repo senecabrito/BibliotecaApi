@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BibliotecaApi.Services.Autor;
 using BibliotecaApi.Models;
-using BibliotecaApi.Dto.Autor;
+using BibliotecaApi.Models.Dto.Autor;
 
 namespace BibliotecaApi.Controllers
 {
@@ -9,9 +9,9 @@ namespace BibliotecaApi.Controllers
     [ApiController]
     public class AutorController : ControllerBase
     {
-        private readonly IAutor _autorInterface;
+        private readonly IAutorService _autorInterface;
 
-        public AutorController(IAutor autorInterface)
+        public AutorController(IAutorService autorInterface)
         {
             _autorInterface = autorInterface;
         }
