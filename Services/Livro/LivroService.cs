@@ -91,9 +91,9 @@ namespace BibliotecaApi.Services.Livro
             return resposta;
         }
 
-        public async Task<ResponseModel<List<LivroModel>>> CriarLivro(LivroCriacaoDto livroCriacaoDto)
+        public async Task<ResponseModel<LivroModel>> CriarLivro(LivroCriacaoDto livroCriacaoDto)
         {
-            ResponseModel<List<LivroModel>> resposta = new ResponseModel<List<LivroModel>>();
+            ResponseModel<LivroModel> resposta = new ResponseModel<LivroModel>();
             try
             {
                 if (livroCriacaoDto.Autor == null)
@@ -102,7 +102,6 @@ namespace BibliotecaApi.Services.Livro
                     return resposta;
                 }
 
-                // Buscar autor pelo ID
                 var autor = await _autorRepository.BuscarAutorPorId(livroCriacaoDto.Autor.Id);
                 if (autor == null)
                 {
@@ -118,7 +117,7 @@ namespace BibliotecaApi.Services.Livro
 
                 await _livroRepository.CriarLivro(livro);
 
-                resposta.Dados = await _livroRepository.ListarLivros();
+                resposta.Dados = livro;
                 resposta.Mensagem = "Livro criado com sucesso.";
             }
             catch (Exception e)
@@ -129,9 +128,9 @@ namespace BibliotecaApi.Services.Livro
             return resposta;
         }
 
-        public async Task<ResponseModel<List<LivroModel>>> EditarLivro(LivroEdicaoDto livroEdicaoDto)
+        public async Task<ResponseModel<LivroModel>> EditarLivro(LivroEdicaoDto livroEdicaoDto)
         {
-            ResponseModel<List<LivroModel>> resposta = new ResponseModel<List<LivroModel>>();
+            ResponseModel<LivroModel> resposta = new ResponseModel<LivroModel>();
             try
             {
                 var livro = await _livroRepository.BuscarLivroPorId(livroEdicaoDto.Id);
@@ -156,7 +155,7 @@ namespace BibliotecaApi.Services.Livro
 
                 await _livroRepository.EditarLivro(livro);
 
-                resposta.Dados = await _livroRepository.ListarLivros();
+                resposta.Dados = livro;
                 resposta.Mensagem = "Dados do livro alterados com sucesso.";
             }
             catch (Exception e)
@@ -167,19 +166,21 @@ namespace BibliotecaApi.Services.Livro
             return resposta;
         }
 
-        public async Task<ResponseModel<List<LivroModel>>> ExcluirLivro(int idLivro)
+        public async Task<ResponseModel<LivroModel>> ExcluirLivro(int idLivro)
         {
-            ResponseModel<List<LivroModel>> resposta = new ResponseModel<List<LivroModel>>();
+            ResponseModel<LivroModel> resposta = new ResponseModel<LivroModel>();
             try
             {
-                var sucesso = await _livroRepository.ExcluirLivro(idLivro);
-                if (!sucesso)
+                var livro = await _livroRepository.BuscarLivroPorId(idLivro);
+                if (livro == null)
                 {
                     resposta.Mensagem = "Nenhum livro foi encontrado para exclusão.";
                     return resposta;
                 }
 
-                resposta.Dados = await _livroRepository.ListarLivros();
+                await _livroRepository.ExcluirLivro(idLivro);
+
+                resposta.Dados = livro;
                 resposta.Mensagem = "Livro excluído com sucesso.";
             }
             catch (Exception e)

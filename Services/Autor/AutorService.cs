@@ -85,9 +85,9 @@ namespace BibliotecaApi.Services.Autor
             return resposta;
         }
 
-        public async Task<ResponseModel<List<AutorModel>>> CriarAutor(AutorCriacaoDto autorCriacaoDto)
+        public async Task<ResponseModel<AutorModel>> CriarAutor(AutorCriacaoDto autorCriacaoDto)
         {
-            ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
+            ResponseModel<AutorModel> resposta = new ResponseModel<AutorModel>();
             try
             {
                 var autor = new AutorModel
@@ -98,7 +98,7 @@ namespace BibliotecaApi.Services.Autor
 
                 await _autorRepository.CriarAutor(autor);
 
-                resposta.Dados = await _autorRepository.ListarAutores();
+                resposta.Dados = autor;
                 resposta.Mensagem = "Autor criado com sucesso.";
             }
             catch (Exception e)
@@ -109,9 +109,9 @@ namespace BibliotecaApi.Services.Autor
             return resposta;
         }
 
-        public async Task<ResponseModel<List<AutorModel>>> EditarAutor(AutorEdicaoDto autorEdicaoDto)
+        public async Task<ResponseModel<AutorModel>> EditarAutor(AutorEdicaoDto autorEdicaoDto)
         {
-            ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
+            ResponseModel<AutorModel> resposta = new ResponseModel<AutorModel>();
             try
             {
                 var autor = await _autorRepository.BuscarAutorPorId(autorEdicaoDto.Id);
@@ -126,7 +126,7 @@ namespace BibliotecaApi.Services.Autor
 
                 await _autorRepository.EditarAutor(autor);
 
-                resposta.Dados = await _autorRepository.ListarAutores();
+                resposta.Dados = autor;
                 resposta.Mensagem = "Dados do autor alterados com sucesso.";
             }
             catch (Exception e)
@@ -137,19 +137,21 @@ namespace BibliotecaApi.Services.Autor
             return resposta;
         }
 
-        public async Task<ResponseModel<List<AutorModel>>> ExcluirAutor(int idAutor)
+        public async Task<ResponseModel<AutorModel>> ExcluirAutor(int idAutor)
         {
-            ResponseModel<List<AutorModel>> resposta = new ResponseModel<List<AutorModel>>();
+            ResponseModel<AutorModel> resposta = new ResponseModel<AutorModel>();
             try
             {
-                var sucesso = await _autorRepository.ExcluirAutor(idAutor);
-                if (!sucesso)
+                var autor = await _autorRepository.BuscarAutorPorId(idAutor);
+                if (autor == null)
                 {
                     resposta.Mensagem = "Nenhum autor foi encontrado para exclusão.";
                     return resposta;
                 }
 
-                resposta.Dados = await _autorRepository.ListarAutores();
+                await _autorRepository.ExcluirAutor(idAutor);
+
+                resposta.Dados = autor;
                 resposta.Mensagem = "Autor excluído com sucesso.";
             }
             catch (Exception e)
